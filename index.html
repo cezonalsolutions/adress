@@ -1,0 +1,1821 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<title>Foodnati | Select Location</title>
+
+<link href="https\://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+
+<link href="https\://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+
+<link href="https\://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+
+<style>
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html,body{width:100%;min-height:100%}
+
+body{font-family:'Poppins',sans-serif;background:#f5f6f8;color:#292929}
+
+button,input{font-family:inherit}
+
+button{cursor:pointer}
+
+/* MAIN SCREEN */
+
+.sticky-section{
+
+  position:sticky;top:0;z-index:100;background:#fff;
+
+  padding:20px 18px 12px;
+
+  padding-top:calc(20px + env(safe-area-inset-top,0px));
+
+}
+
+.top-nav h2{font-size:14px;font-weight:500;margin-bottom:15px}
+
+.search-box{
+
+  display:flex;align-items:center;height:42px;
+
+  border:1px solid #e9e9e9;border-radius:9px;background:#fafafa;
+
+}
+
+.search-box input{
+
+  flex:1;min-width:0;height:100%;padding:0 12px;
+
+  border:0;outline:0;background:transparent;font-size:12px;
+
+}
+
+.search-icon{
+
+  height:100%;padding:0 13px;border:0;background:none;
+
+  color:#666;font-size:13px;
+
+}
+
+.action-section{background:#fff;padding:1px 18px 15px}
+
+.action-row{
+
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+
+  gap:9px;margin-top:13px;
+
+}
+
+.action-box{
+
+  height:42px;min-width:0;display:flex;align-items:center;
+
+  justify-content:center;gap:6px;padding:0 5px;
+
+  border:1px solid #e9e9e9;border-radius:9px;background:#fff;
+
+  font-size:10px;font-weight:500;color:#333;white-space:nowrap;
+
+}
+
+.current-location>i{color:#16a34a;font-size:17px}
+
+.plus-box{
+
+  width:17px;height:17px;display:flex;align-items:center;
+
+  justify-content:center;background:#e9f8ed;
+
+  border:1px solid #bce9c8;border-radius:4px;color:#16a34a;
+
+}
+
+.plus-box i{font-size:11px}
+
+/* ADDRESS LISTS */
+
+.saved-section{padding:20px 18px 35px;background:#f5f6f8}
+
+.saved-addresses-heading,.recent-heading,.section-heading{
+
+  font-size:11px;font-weight:500;letter-spacing:.8px;
+
+  color:#9298a3;margin-bottom:14px;
+
+}
+
+.address-container{
+
+  background:#fff;border:1px solid #ededed;
+
+  border-radius:10px;overflow:hidden;
+
+}
+
+.address-item{
+
+  display:flex;align-items:flex-start;gap:12px;width:100%;
+
+  padding:16px 14px;border:0;background:#fff;text-align:left;
+
+}
+
+.address-item:active{background:#fafafa}
+
+.address-icon{
+
+  width:34px;height:34px;flex-shrink:0;
+
+  display:flex;align-items:center;justify-content:center;
+
+  background:#f3f4f6;border:1px solid #ededed;border-radius:8px;
+
+}
+
+.address-icon svg{
+
+  width:18px;height:18px;fill:none;stroke:#555;
+
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;
+
+}
+
+.address-info{flex:1;min-width:0}
+
+.address-name{font-size:12px;font-weight:500;margin-bottom:5px}
+
+.address-text{
+
+  font-size:10.5px;line-height:1.7;color:#858585;
+
+  overflow-wrap:anywhere;
+
+}
+
+.address-divider{height:1px;background:#eee}
+
+.recent-section{margin-top:25px}
+
+/* MAP */
+
+.map-page{
+
+  position:fixed;inset:0;z-index:1000;display:none;background:#fff;
+
+}
+
+.map-page.active{display:block}
+
+#map{position:absolute;inset:0;z-index:1}
+
+.map-top{
+
+  position:absolute;z-index:1001;
+
+  top:calc(18px + env(safe-area-inset-top,0px));
+
+  left:16px;right:16px;display:flex;align-items:center;gap:10px;
+
+}
+
+.map-back{
+
+  width:44px;height:44px;flex-shrink:0;border:0;border-radius:50%;
+
+  background:#fff;box-shadow:0 2px 12px #0002;
+
+  display:flex;align-items:center;justify-content:center;
+
+  color:#333;font-size:17px;
+
+}
+
+.map-search{
+
+  flex:1;min-width:0;height:44px;background:#fff;
+
+  border-radius:11px;box-shadow:0 2px 12px #0002;
+
+  display:flex;align-items:center;gap:10px;padding:0 13px;
+
+}
+
+.map-search input{
+
+  flex:1;min-width:0;border:0;outline:0;background:transparent;
+
+  font-size:12px;white-space:nowrap;text-overflow:ellipsis;
+
+}
+
+.map-search button{
+
+  border:0;background:none;color:#777;font-size:14px;
+
+  padding:6px 0 6px 6px;
+
+}
+
+.map-center-pin{
+
+  position:absolute;top:50%;left:50%;z-index:500;
+
+  transform:translate(-50%,-100%);pointer-events:none;
+
+  color:#16a34a;font-size:37px;
+
+  filter:drop-shadow(0 3px 3px #0003);
+
+}
+
+.map-current-btn{
+
+  position:absolute;left:50%;
+
+  bottom:calc(195px + env(safe-area-inset-bottom,0px));
+
+  transform:translateX(-50%);z-index:1001;
+
+  min-width:155px;height:44px;padding:0 17px;
+
+  display:flex;align-items:center;justify-content:center;gap:9px;
+
+  border:0;border-radius:25px;background:#fff;color:#333;
+
+  font-size:11px;font-weight:500;white-space:nowrap;
+
+  box-shadow:0 2px 12px #0002;
+
+}
+
+.map-current-btn i{color:#16a34a;font-size:18px}
+
+/* MAP BOTTOM */
+
+.map-bottom{
+
+  position:absolute;bottom:0;left:0;right:0;z-index:1001;
+
+  background:#fff;border-radius:20px 20px 0 0;
+
+  box-shadow:0 -3px 20px #0001;
+
+  padding:22px 20px calc(20px + env(safe-area-inset-bottom,0px));
+
+}
+
+.map-address-row{display:flex;align-items:flex-start;gap:12px}
+
+.map-bottom-icon{
+
+  width:34px;height:34px;flex-shrink:0;
+
+  display:flex;align-items:center;justify-content:center;
+
+  background:#e9f8ed;border:1px solid #bce9c8;
+
+  border-radius:8px;color:#16a34a;font-size:16px;
+
+}
+
+.map-address-details{flex:1;min-width:0}
+
+.map-place-name{font-size:13px;font-weight:500;margin-bottom:5px}
+
+.map-full-address{
+
+  font-size:11px;line-height:1.65;color:#888;overflow-wrap:anywhere;
+
+}
+
+.address-shimmer{width:100%}
+
+.shimmer-line{
+
+  position:relative;overflow:hidden;background:#e9ebee;border-radius:5px;
+
+}
+
+.shimmer-line:after{
+
+  content:"";position:absolute;inset:0;
+
+  transform:translateX(-100%);
+
+  background:linear-gradient(90deg,transparent,#ffffffd9,transparent);
+
+  animation:shimmerMove 1.35s infinite;
+
+}
+
+.shimmer-title{width:40%;max-width:150px;height:13px;margin:2px 0 12px}
+
+.shimmer-address-one{width:94%;height:10px;margin-bottom:9px}
+
+.shimmer-address-two{width:70%;height:10px}
+
+@keyframes shimmerMove{to{transform:translateX(100%)}}
+
+.address-result{display:none}
+
+.map-address-details.loaded .address-shimmer{display:none}
+
+.map-address-details.loaded .address-result{display:block}
+
+.confirm-location{
+
+  width:100%;height:46px;margin-top:18px;background:#16a34a;
+
+  border:0;border-radius:10px;color:#fff;font-size:12px;
+
+  font-weight:500;white-space:nowrap;
+
+}
+
+.confirm-location:disabled{opacity:.55;cursor:not-allowed}
+
+.map-message{
+
+  position:absolute;z-index:1002;display:none;
+
+  top:calc(77px + env(safe-area-inset-top,0px));
+
+  left:16px;right:16px;padding:10px 12px;
+
+  background:#fff;border-radius:9px;
+
+  font-size:11px;color:#555;box-shadow:0 2px 12px #0002;
+
+}
+
+.map-message.show{display:block}
+
+.leaflet-control-attribution{font-size:9px!important}
+
+/* NEW ADDRESS SCREEN */
+
+.new-address-page{
+
+  position:fixed;inset:0;z-index:2000;display:none;
+
+  background:#f5f6f8;overflow-y:auto;
+
+}
+
+.new-address-page.active{display:block}
+
+.new-address-navbar{
+
+  position:sticky;top:0;z-index:10;width:100%;
+
+  min-height:66px;display:flex;align-items:center;gap:13px;
+
+  padding:14px 18px;
+
+  padding-top:calc(14px + env(safe-area-inset-top,0px));
+
+  background:#fff;border-bottom:1px solid #f0f0f0;
+
+}
+
+.new-address-back{
+
+  width:24px;height:35px;flex-shrink:0;
+
+  display:flex;align-items:center;justify-content:flex-start;
+
+  border:0;background:transparent;color:#333;font-size:17px;
+
+}
+
+.new-address-location{
+
+  flex:1;min-width:0;display:flex;align-items:center;gap:8px;
+
+  white-space:nowrap;
+
+}
+
+.new-address-city{
+
+  flex-shrink:0;font-size:12px;font-weight:500;color:#292929;
+
+}
+
+.new-address-separator{
+
+  flex-shrink:0;color:#a0a0a0;font-size:13px;font-weight:400;
+
+}
+
+.new-address-location-name{
+
+  flex:1;min-width:0;font-size:12px;font-weight:400;color:#777;
+
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+
+}
+
+/* FORM */
+
+.new-address-content{padding:22px 18px 35px}
+
+.form-section{margin-bottom:25px}
+
+.form-card{
+
+  width:100%;background:#fff;border:1px solid #ededed;
+
+  border-radius:14px;padding:16px 14px;
+
+  display:flex;flex-direction:column;gap:15px;
+
+}
+
+/* FLOATING LABEL INPUTS */
+
+.float-field{
+
+  position:relative;width:100%;
+
+}
+
+.float-field input{
+
+  width:100%;height:49px;padding:12px 15px 7px;
+
+  border:1px solid #e6e6e6;border-radius:13px;
+
+  background:#fafafa;outline:none;
+
+  font-size:12px;font-weight:400;color:#292929;
+
+  transition:border-color .2s,background .2s;
+
+}
+
+.float-field label{
+
+  position:absolute;left:15px;top:50%;
+
+  transform:translateY(-50%);
+
+  padding:0 5px;margin-left:-5px;
+
+  background:#fafafa;color:#999;
+
+  font-size:12px;font-weight:400;
+
+  pointer-events:none;
+
+  transition:top .18s,font-size .18s,color .18s,background .18s;
+
+  white-space:nowrap;
+
+}
+
+.float-field input:focus{
+
+  border-color:#16a34a;background:#fff;
+
+}
+
+.float-field input:focus + label,
+
+.float-field input:not(:placeholder-shown) + label{
+
+  top:0;font-size:10px;color:#16a34a;background:#fff;
+
+  transform:translateY(-50%);
+
+}
+
+.float-field input:not(:focus):not(:placeholder-shown) + label{
+
+  color:#777;
+
+}
+
+.float-field input:focus + label{
+
+  background:#fff;
+
+}
+
+/* DEMO HOME */
+
+.home-demo{
+
+  position:fixed;inset:0;z-index:3000;display:none;background:#fff;
+
+}
+
+.home-demo.active{display:block}
+
+.home-demo-header{
+
+  padding:calc(20px + env(safe-area-inset-top,0px)) 18px 20px;
+
+  font-size:14px;font-weight:500;border-bottom:1px solid #eee;
+
+}
+
+.home-demo-header button{
+
+  border:0;background:none;margin-right:15px;font-size:17px;color:#333;
+
+}
+
+.home-demo-content{padding:25px 18px;font-size:12px;color:#666}
+
+@media(max-width:350px){
+
+  .action-row{gap:6px}
+
+  .action-box{font-size:9px;gap:4px;padding:0 3px}
+
+  .current-location>i{font-size:15px}
+
+  .map-search input{font-size:11px}
+
+}
+
+/* ADDRESS TYPE OPTIONS */
+
+.address-type-row {
+
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 3px;
+
+}
+
+.address-type-btn {
+
+  height: 43px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 7px;
+
+  border: 1px solid #e6e6e6;
+
+  border-radius: 12px;
+
+  background: #fafafa;
+
+  color: #777;
+
+  font-family: 'Poppins', sans-serif;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+}
+
+.address-type-btn i {
+
+  font-size: 13px;
+
+}
+
+.address-type-btn.active {
+
+  background: #e9f8ed;
+
+  border-color: #16a34a;
+
+  color: #16a34a;
+
+}
+
+/* SAVE ADDRESS BUTTON */
+
+.save-address-btn {
+
+  width: 100%;
+
+  height: 47px;
+
+  margin-top: 20px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background: #16a34a;
+
+  color: #fff;
+
+  font-family: 'Poppins', sans-serif;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+}
+
+.save-address-btn:active {
+
+  opacity: .85;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- MAIN LOCATION SCREEN -->
+
+<div id="locationPage">
+
+  <div class="sticky-section">
+
+    <header class="top-nav">
+
+      <h2>Select your location</h2>
+
+    </header>
+
+    <div class="search-box">
+
+      <input id="locationSearch" type="search"
+
+        placeholder="Search an area or address">
+
+      <button class="search-icon" type="button"
+
+        onclick="document.getElementById('locationSearch').focus()">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="content">
+
+    <section class="action-section">
+
+      <div class="action-row">
+
+        <button class="action-box current-location" type="button"
+
+          onclick="openMap('current')">
+
+          <i class="fa-solid fa-location-crosshairs"></i>
+
+          <span>Use current location</span>
+
+        </button>
+
+        <button class="action-box new-address" type="button"
+
+          onclick="openMap('new')">
+
+          <span class="plus-box"><i class="fa-solid fa-plus"></i></span>
+
+          <span>Add new address</span>
+
+        </button>
+
+      </div>
+
+    </section>
+
+    <main class="saved-section">
+
+      <h3 class="saved-addresses-heading">SAVED ADDRESSES</h3>
+
+      <div class="address-container">
+
+        <button class="address-item" type="button">
+
+          <div class="address-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <path d="M3 10.5L12 3l9 7.5"></path>
+
+              <path d="M5.5 9.5V20h13V9.5"></path>
+
+            </svg>
+
+          </div>
+
+          <div class="address-info">
+
+            <div class="address-name">Nandu</div>
+
+            <div class="address-text">
+
+              Door No. 4-12, Main Road, Tanuku,
+
+              West Godavari, Andhra Pradesh - 534211
+
+            </div>
+
+          </div>
+
+        </button>
+
+        <div class="address-divider"></div>
+
+        <button class="address-item" type="button">
+
+          <div class="address-icon">
+
+            <svg viewBox="0 0 24 24">
+
+              <path d="M20 10c0 5.5-8 11-8 11S4 15.5 4 10a8 8 0 1 1 16 0Z"></path>
+
+              <circle cx="12" cy="10" r="2.5"></circle>
+
+            </svg>
+
+          </div>
+
+          <div class="address-info">
+
+            <div class="address-name">Sweety</div>
+
+            <div class="address-text">
+
+              2nd Floor, VMAX Road, Tanuku,
+
+              West Godavari, Andhra Pradesh - 534211
+
+            </div>
+
+          </div>
+
+        </button>
+
+      </div>
+
+      <section class="recent-section">
+
+        <h3 class="recent-heading">RECENTLY SEARCHED LOCATIONS</h3>
+
+        <div class="address-container">
+
+          <button class="address-item" type="button"
+
+            onclick="openPlace(16.754,81.681)">
+
+            <div class="address-icon">
+
+              <svg viewBox="0 0 24 24">
+
+                <path d="M20 10c0 5.5-8 11-8 11S4 15.5 4 10a8 8 0 1 1 16 0Z"></path>
+
+                <circle cx="12" cy="10" r="2.5"></circle>
+
+              </svg>
+
+            </div>
+
+            <div class="address-info">
+
+              <div class="address-name">Tanuku</div>
+
+              <div class="address-text">Tanuku, West Godavari, Andhra Pradesh - 534211</div>
+
+            </div>
+
+          </button>
+
+          <div class="address-divider"></div>
+
+          <button class="address-item" type="button"
+
+            onclick="openPlace(16.62,81.73)">
+
+            <div class="address-icon">
+
+              <svg viewBox="0 0 24 24">
+
+                <path d="M20 10c0 5.5-8 11-8 11S4 15.5 4 10a8 8 0 1 1 16 0Z"></path>
+
+                <circle cx="12" cy="10" r="2.5"></circle>
+
+              </svg>
+
+            </div>
+
+            <div class="address-info">
+
+              <div class="address-name">Penumantra</div>
+
+              <div class="address-text">Penumantra, West Godavari, Andhra Pradesh</div>
+
+            </div>
+
+          </button>
+
+          <div class="address-divider"></div>
+
+          <button class="address-item" type="button"
+
+            onclick="openPlace(16.69,81.60)">
+
+            <div class="address-icon">
+
+              <svg viewBox="0 0 24 24">
+
+                <path d="M20 10c0 5.5-8 11-8 11S4 15.5 4 10a8 8 0 1 1 16 0Z"></path>
+
+                <circle cx="12" cy="10" r="2.5"></circle>
+
+              </svg>
+
+            </div>
+
+            <div class="address-info">
+
+              <div class="address-name">Attili</div>
+
+              <div class="address-text">Attili, West Godavari, Andhra Pradesh</div>
+
+            </div>
+
+          </button>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+</div>
+
+<!-- MAP SCREEN -->
+
+<div class="map-page" id="mapPage">
+
+  <div id="map"></div>
+
+  <div class="map-top">
+
+    <button class="map-back" onclick="closeMap()" aria-label="Back">
+
+      <i class="fa-solid fa-arrow-left"></i>
+
+    </button>
+
+    <div class="map-search">
+
+      <input id="mapSearchInput" type="search"
+
+        placeholder="Search an area or address">
+
+      <button id="mapSearchBtn" aria-label="Search">
+
+        <i class="fa-solid fa-magnifying-glass"></i>
+
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="map-message" id="mapMessage" role="status"></div>
+
+  <div class="map-center-pin">
+
+    <i class="fa-solid fa-location-dot"></i>
+
+  </div>
+
+  <button class="map-current-btn" onclick="detectCurrentLocation()">
+
+    <i class="fa-solid fa-location-crosshairs"></i>
+
+    <span>Current Location</span>
+
+  </button>
+
+  <div class="map-bottom">
+
+    <div class="map-address-row">
+
+      <div class="map-bottom-icon">
+
+        <i class="fa-solid fa-location-dot"></i>
+
+      </div>
+
+      <div class="map-address-details" id="mapAddressDetails">
+
+        <div class="address-shimmer" aria-label="Loading address">
+
+          <div class="shimmer-line shimmer-title"></div>
+
+          <div class="shimmer-line shimmer-address-one"></div>
+
+          <div class="shimmer-line shimmer-address-two"></div>
+
+        </div>
+
+        <div class="address-result">
+
+          <div class="map-place-name" id="mapPlaceName"></div>
+
+          <div class="map-full-address" id="mapFullAddress"></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <button class="confirm-location" id="confirmBtn"
+
+      onclick="confirmLocation()" disabled>
+
+      Confirm and Proceed
+
+    </button>
+
+  </div>
+
+</div>
+
+<!-- NEW ADDRESS PAGE -->
+
+<div class="new-address-page" id="newAddressPage">
+
+  <nav class="new-address-navbar">
+
+    <button class="new-address-back" onclick="backToMap()" aria-label="Back">
+
+      <i class="fa-solid fa-arrow-left"></i>
+
+    </button>
+
+    <div class="new-address-location">
+
+      <span class="new-address-city" id="newAddressCity">Location</span>
+
+      <span class="new-address-separator">|</span>
+
+      <span class="new-address-location-name" id="newAddressLocationName">
+
+        Selected Address
+
+      </span>
+
+    </div>
+
+  </nav>
+
+  <main class="new-address-content">
+
+    <!-- RECEIVER DETAILS -->
+
+    <section class="form-section">
+
+      <h3 class="section-heading">RECEIVER DETAILS</h3>
+
+      <div class="form-card">
+
+        <div class="float-field">
+
+          <input type="text" id="receiverName"
+
+            placeholder=" " autocomplete="name">
+
+          <label for="receiverName">Receiver Name</label>
+
+        </div>
+
+        <div class="float-field">
+
+          <input type="tel" id="receiverMobile"
+
+            placeholder=" " maxlength="10"
+
+            inputmode="numeric" autocomplete="tel">
+
+          <label for="receiverMobile">Receiver Mobile</label>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- LOCATION DETAILS -->
+
+<!-- LOCATION DETAILS -->
+
+<section class="form-section">
+
+  <h3 class="section-heading">LOCATION DETAILS</h3>
+
+  <div class="form-card">
+
+    <!-- ADDRESS TYPE -->
+
+    <div class="address-type-row">
+
+      <button type="button"
+
+        class="address-type-btn active"
+
+        onclick="selectAddressType(this, 'Home')">
+
+        <i class="fa-solid fa-house"></i>
+
+        <span>Home</span>
+
+      </button>
+
+      <button type="button"
+
+        class="address-type-btn"
+
+        onclick="selectAddressType(this, 'Office')">
+
+        <i class="fa-solid fa-briefcase"></i>
+
+        <span>Office</span>
+
+      </button>
+
+      <button type="button"
+
+        class="address-type-btn"
+
+        onclick="selectAddressType(this, 'Others')">
+
+        <i class="fa-solid fa-location-dot"></i>
+
+        <span>Others</span>
+
+      </button>
+
+    </div>
+
+    <!-- HOUSE / FLOOR NUMBER -->
+
+    <div class="float-field">
+
+      <input type="text"
+
+        id="houseNumber"
+
+        placeholder=" "
+
+        autocomplete="address-line1">
+
+      <label for="houseNumber">House / Floor Number</label>
+
+    </div>
+
+    <!-- BUILDING / STREET -->
+
+    <div class="float-field">
+
+      <input type="text"
+
+        id="buildingStreet"
+
+        placeholder=" "
+
+        autocomplete="address-line2">
+
+      <label for="buildingStreet">Building / Street</label>
+
+    </div>
+
+    <!-- CUSTOM ADDRESS NAME -->
+    <div class="float-field">
+      <input type="text" id="saveAddressAs" placeholder=" " maxlength="60">
+      <label for="saveAddressAs">Save Address As (Name)</label>
+    </div>
+
+  </div>
+
+  <button class="save-address-btn"
+
+    type="button"
+
+    onclick="saveNewAddress()">
+
+    Save Address As
+
+  </button>
+
+</section>
+
+  </main>
+
+</div>
+
+<!-- DEMO HOME -->
+
+<div class="home-demo" id="homeDemo">
+
+  <div class="home-demo-header">
+
+    <button onclick="backToLocationPage()">
+
+      <i class="fa-solid fa-arrow-left"></i>
+
+    </button>
+
+    Foodnati
+
+  </div>
+
+  <div class="home-demo-content">
+
+    Location confirmed. Ready to open Foodnati home.
+
+  </div>
+
+</div>
+
+<script src="https\://unpkg.com/leaflet@1.9.4/dist/leaflet.js">renderSavedAddresses();
+</script>
+
+<script>
+
+let map = null;
+
+let selectedLocation = null;
+
+let locationMode = 'current';
+
+let reverseRequest = 0;
+
+let mapSession = 0;
+
+let messageTimer = null;
+
+let searchController = null;
+
+let suppressMapMove = false;
+
+const DEFAULT_CENTER = [16.754,81.681];
+
+const mapPage = document.getElementById('mapPage');
+
+const mapDetails = document.getElementById('mapAddressDetails');
+
+const confirmBtn = document.getElementById('confirmBtn');
+
+const mapSearchInput = document.getElementById('mapSearchInput');
+
+function showShimmer() {
+
+  mapDetails.classList.remove('loaded');
+
+  confirmBtn.disabled = true;
+
+  selectedLocation = null;
+
+}
+
+function showAddress(placeName, fullAddress, lat, lng, city = '') {
+
+  selectedLocation = {
+
+    latitude: lat,
+
+    longitude: lng,
+
+    placeName,
+
+    address: fullAddress,
+
+    city: city || placeName
+
+  };
+
+  document.getElementById('mapPlaceName').textContent = placeName;
+
+  document.getElementById('mapFullAddress').textContent = fullAddress;
+
+  mapDetails.classList.add('loaded');
+
+  confirmBtn.disabled = false;
+
+}
+
+function showMapMessage(message) {
+
+  const element = document.getElementById('mapMessage');
+
+  element.textContent = message;
+
+  element.classList.add('show');
+
+  clearTimeout(messageTimer);
+
+  messageTimer = setTimeout(() => element.classList.remove('show'),3500);
+
+}
+
+function initializeMap() {
+
+  if(map) {
+
+    map.invalidateSize();
+
+    return;
+
+  }
+
+  map = L.map('map',{zoomControl:false}).setView(DEFAULT_CENTER,15);
+
+  L.tileLayer('https\://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+
+    maxZoom:19,
+
+    attribution:'© OpenStreetMap contributors'
+
+  }).addTo(map);
+
+  map.on('moveend',()=>{
+
+    if(!mapPage.classList.contains('active') || suppressMapMove) return;
+
+    const center = map.getCenter();
+
+    updateSelectedLocation(center.lat,center.lng);
+
+  });
+
+}
+
+function moveMapTo(lat,lng,zoom=16) {
+
+  if(!map) return;
+
+  suppressMapMove = true;
+
+  map.setView([lat,lng],zoom);
+
+  updateSelectedLocation(lat,lng);
+
+  setTimeout(()=>suppressMapMove=false,100);
+
+}
+
+function openMap(mode='current') {
+
+  locationMode = mode;
+
+  mapSession++;
+
+  mapPage.classList.add('active');
+
+  document.body.style.overflow = 'hidden';
+
+  showShimmer();
+
+  initializeMap();
+
+  const session = mapSession;
+
+  setTimeout(()=>{
+
+    if(session !== mapSession) return;
+
+    map.invalidateSize();
+
+    if(mode==='current') {
+
+      detectCurrentLocation();
+
+    } else {
+
+      const center=map.getCenter();
+
+      updateSelectedLocation(center.lat,center.lng);
+
+    }
+
+  },100);
+
+}
+
+function closeMap() {
+
+  mapSession++;
+
+  reverseRequest++;
+
+  if(searchController) searchController.abort();
+
+  mapPage.classList.remove('active');
+
+  document.getElementById('mapMessage').classList.remove('show');
+
+  document.body.style.overflow='';
+
+}
+
+function openPlace(lat,lng) {
+
+  openMap('current');
+
+  const session=mapSession;
+
+  setTimeout(()=>{
+
+    if(session!==mapSession) return;
+
+    moveMapTo(lat,lng,16);
+
+  },150);
+
+}
+
+function detectCurrentLocation() {
+
+  if(!navigator.geolocation) {
+
+    showMapMessage('Location is not supported in this browser.');
+
+    return;
+
+  }
+
+  const session=mapSession;
+
+  showShimmer();
+
+  navigator.geolocation.getCurrentPosition(
+
+    position=>{
+
+      if(session!==mapSession || !mapPage.classList.contains('active')) return;
+
+      moveMapTo(position.coords.latitude,position.coords.longitude,17);
+
+    },
+
+    error=>{
+
+      if(session!==mapSession) return;
+
+      showMapMessage(error.code===1
+
+        ? 'Please allow location permission.'
+
+        : 'Unable to detect location. Move the map manually.');
+
+      const center=map.getCenter();
+
+      updateSelectedLocation(center.lat,center.lng);
+
+    },
+
+    {enableHighAccuracy:true,timeout:15000,maximumAge:10000}
+
+  );
+
+}
+
+async function updateSelectedLocation(lat,lng) {
+
+  const requestId=++reverseRequest;
+
+  const session=mapSession;
+
+  showShimmer();
+
+  try {
+
+    const url=new URL('https\://nominatim.openstreetmap.org/reverse');
+
+    url.searchParams.set('format','jsonv2');
+
+    url.searchParams.set('addressdetails','1');
+
+    url.searchParams.set('zoom','18');
+
+    url.searchParams.set('lat',lat);
+
+    url.searchParams.set('lon',lng);
+
+    const response=await fetch(url.toString(),{
+
+      headers:{Accept:'application/json'}
+
+    });
+
+    if(!response.ok) throw new Error('Address lookup failed');
+
+    const data=await response.json();
+
+    if(requestId!==reverseRequest || session!==mapSession) return;
+
+    const address=data.address || {};
+
+    const city=
+
+      address.city ||
+
+      address.town ||
+
+      address.village ||
+
+      address.municipality ||
+
+      address.county ||
+
+      'Location';
+
+    const placeName=
+
+      address.neighbourhood ||
+
+      address.suburb ||
+
+      address.village ||
+
+      address.town ||
+
+      address.city ||
+
+      address.county ||
+
+      data.name ||
+
+      'Selected Location';
+
+    const fullAddress=data.display_name || [
+
+      address.road,
+
+      address.suburb,
+
+      address.village || address.town || address.city,
+
+      address.state,
+
+      address.postcode
+
+    ].filter(Boolean).join(', ');
+
+    if(!fullAddress) throw new Error('No readable address found');
+
+    showAddress(placeName,fullAddress,lat,lng,city);
+
+  } catch(error) {
+
+    if(requestId!==reverseRequest || session!==mapSession) return;
+
+    document.getElementById('mapPlaceName').textContent='Address unavailable';
+
+    document.getElementById('mapFullAddress').textContent=
+
+      'Unable to fetch address. Move the map slightly to retry.';
+
+    mapDetails.classList.add('loaded');
+
+    selectedLocation=null;
+
+    confirmBtn.disabled=true;
+
+  }
+
+}
+
+async function searchMapLocation() {
+
+  const query=mapSearchInput.value.trim();
+
+  if(query.length<3) {
+
+    showMapMessage('Enter at least 3 characters.');
+
+    return;
+
+  }
+
+  const session=mapSession;
+
+  try {
+
+    if(searchController) searchController.abort();
+
+    searchController=new AbortController();
+
+    const url='https\://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q='+
+
+      encodeURIComponent(query);
+
+    const response=await fetch(url,{signal:searchController.signal});
+
+    if(!response.ok) throw new Error('Search failed');
+
+    const results=await response.json();
+
+    if(session!==mapSession || mapSearchInput.value.trim()!==query) return;
+
+    if(!results.length) {
+
+      showMapMessage('No location found.');
+
+      return;
+
+    }
+
+    moveMapTo(Number(results[0].lat),Number(results[0].lon),16);
+
+  } catch(error) {
+
+    if(error.name!=='AbortError') {
+
+      showMapMessage('Unable to search location. Try again.');
+
+    }
+
+  }
+
+}
+
+mapSearchInput.addEventListener('keydown',event=>{
+
+  if(event.key==='Enter') {
+
+    event.preventDefault();
+
+    searchMapLocation();
+
+    mapSearchInput.blur();
+
+  }
+
+});
+
+document.getElementById('mapSearchBtn')
+
+  .addEventListener('click',searchMapLocation);
+
+function confirmLocation() {
+
+  if(!selectedLocation) return;
+
+  localStorage.setItem(
+
+    'foodnati_selected_location',
+
+    JSON.stringify(selectedLocation)
+
+  );
+
+  if(locationMode==='current') {
+
+    closeMap();
+
+    document.getElementById('homeDemo').classList.add('active');
+
+    document.body.style.overflow='hidden';
+
+  } else {
+
+    document.getElementById('newAddressCity').textContent=
+
+      selectedLocation.city || selectedLocation.placeName;
+
+    document.getElementById('newAddressLocationName').textContent=
+
+      selectedLocation.address;
+
+    document.getElementById('newAddressPage').classList.add('active');
+
+  }
+
+}
+
+function backToMap() {
+
+  document.getElementById('newAddressPage').classList.remove('active');
+
+  setTimeout(()=>map && map.invalidateSize(),100);
+
+}
+
+function backToLocationPage() {
+
+  document.getElementById('homeDemo').classList.remove('active');
+
+  document.body.style.overflow='';
+
+}
+
+document.getElementById('receiverMobile').addEventListener('input',function(){
+
+  this.value=this.value.replace(/\D/g,'').slice(0,10);
+
+});
+
+let selectedAddressType = 'Home';
+
+function selectAddressType(button, type) {
+
+  document.querySelectorAll('.address-type-btn')
+
+    .forEach(btn => btn.classList.remove('active'));
+
+  button.classList.add('active');
+
+  selectedAddressType = type;
+
+}
+
+function renderSavedAddresses() {
+  const container = document.querySelector('.saved-section > .address-container');
+  if (!container) return;
+  container.querySelectorAll('.user-saved-item').forEach(el => el.remove());
+  let entries = [];
+  try { entries = JSON.parse(localStorage.getItem('foodnati_saved_addresses') || '[]'); }
+  catch (_) { entries = []; }
+  if (!Array.isArray(entries)) return;
+  entries.slice().reverse().forEach(item => {
+    const divider = document.createElement('div');
+    divider.className = 'address-divider user-saved-item';
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'address-item user-saved-item';
+    const icon = document.createElement('div');
+    icon.className = 'address-icon';
+    const symbol = document.createElement('i');
+    symbol.className = item.type === 'Office' ? 'fa-solid fa-briefcase' :
+      item.type === 'Home' ? 'fa-solid fa-house' : 'fa-solid fa-location-dot';
+    icon.appendChild(symbol);
+    const info = document.createElement('div');
+    info.className = 'address-info';
+    const name = document.createElement('div');
+    name.className = 'address-name';
+    name.textContent = item.name || item.type || 'Saved Address';
+    const address = document.createElement('div');
+    address.className = 'address-text';
+    address.textContent = [item.house_floor_number, item.building_street, item.full_address].filter(Boolean).join(', ');
+    info.append(name, address);
+    button.append(icon, info);
+    button.addEventListener('click', () => {
+      if (!Number.isFinite(Number(item.latitude)) || !Number.isFinite(Number(item.longitude))) return;
+      openMapAt(Number(item.latitude), Number(item.longitude));
+    });
+    container.append(divider, button);
+  });
+}
+
+function openMapAt(lat, lng) {
+  locationMode = 'current';
+  mapSession++;
+  mapPage.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  initializeMap();
+  setTimeout(() => { map.invalidateSize(); moveMapTo(lat, lng, 17); }, 100);
+}
+
+function saveNewAddress() {
+
+  const receiverName =
+
+    document.getElementById('receiverName').value.trim();
+
+  const receiverMobile =
+
+    document.getElementById('receiverMobile').value.trim();
+
+  const houseNumber =
+
+    document.getElementById('houseNumber').value.trim();
+
+  const buildingStreet =
+
+    document.getElementById('buildingStreet').value.trim();
+
+  if (!receiverName) {
+
+    document.getElementById('receiverName').focus();
+
+    return;
+
+  }
+
+  if (!/^[0-9]{10}$/.test(receiverMobile)) {
+
+    document.getElementById('receiverMobile').focus();
+
+    return;
+
+  }
+
+  if (!houseNumber) {
+
+    document.getElementById('houseNumber').focus();
+
+    return;
+
+  }
+
+  if (!buildingStreet) {
+
+    document.getElementById('buildingStreet').focus();
+
+    return;
+
+  }
+
+  if (!addressName) {
+    document.getElementById('saveAddressAs').focus();
+    return;
+  }
+
+  if (!selectedLocation) return;
+
+  const addressData = {
+    name: addressName,
+
+    type: selectedAddressType,
+
+    receiver_name: receiverName,
+
+    receiver_mobile: receiverMobile,
+
+    house_floor_number: houseNumber,
+
+    building_street: buildingStreet,
+
+    city: selectedLocation.city,
+
+    full_address: selectedLocation.address,
+
+    latitude: selectedLocation.latitude,
+
+    longitude: selectedLocation.longitude
+
+  };
+
+  const savedAddresses = JSON.parse(
+
+    localStorage.getItem('foodnati_saved_addresses') || '[]'
+
+  );
+
+  savedAddresses.push(addressData);
+
+  localStorage.setItem(
+
+    'foodnati_saved_addresses',
+
+    JSON.stringify(savedAddresses)
+
+  );
+
+  alert('Address saved successfully!');
+  document.getElementById('newAddressPage').classList.remove('active');
+  closeMap();
+  renderSavedAddresses();
+
+}
+
+renderSavedAddresses();
+</script>
+
+</body>
+
+</html>
